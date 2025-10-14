@@ -1,0 +1,25 @@
+{
+  "examples": [
+    {
+      "name": "Пример без ошибок",
+      "file": "./Examples/laba1/ex1.txt"
+    },
+    {
+      "name": "Пример без ошибок (+ 16CC)",
+      "file": "./Examples/laba1/ex2.txt"
+    },
+    {
+      "name": "ОВП: адрес точки входа вне программы (1)",
+      "file": "./Examples/laba1/ex3.txt"
+    },
+    {
+      "name": "ОВП: адрес точки входа вне программы (2)",
+      "file": "./Examples/laba1/ex4.txt"
+    },
+    {
+      "name": "ОВП: несуществующая метка",
+      "file": "./Examples/laba1/ex5.txt"
+    }
+  ]
+}
+

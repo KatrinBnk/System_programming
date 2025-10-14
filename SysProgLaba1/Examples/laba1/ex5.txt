@@ -1,0 +1,11 @@
+PROG  START   100
+    JMP     L1 
+B1  WORD    40 
+B3  BYTE    C"HUI!"
+B4  BYTE    12	
+L1  LOADR1  B1	
+    LOADR2  B4
+    ADD R1  R2
+    SAVER1  M1
+    INT     200	
+    END
