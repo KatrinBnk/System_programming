@@ -210,10 +210,10 @@ namespace SysProgLaba1Shared
                                 string symbols = codeLine.FirstOperand.Trim('X').Trim('\"');
 
                                 // Проверяем переполнение выделенной памяти
-                                OverflowCheck(ip + symbols.Length, textLine, lineNumber);
+                                OverflowCheck(ip + symbols.Length / 2, textLine, lineNumber);
 
                                 firstPassLine = $"{ip:X6} {"BYTE"} {codeLine.FirstOperand.ToUpper()}";
-                                ip += symbols.Length;
+                                ip += symbols.Length / 2;
                                 break;
                             }
                             else
