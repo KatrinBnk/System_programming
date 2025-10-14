@@ -32,9 +32,6 @@ namespace SysProgLaba1Shared
                 var textLine = string.Join(" ", line);
                 var firstPassLine = string.Empty;
 
-                if (!startFlag && ip != 0) 
-                    throw new AssemblerException(ErrorFormatter.Format(lineNumber, "Первой директивой программы должна быть START", textLine));
-
                 // Проверка переполнения памяти
                 if(startFlag) OverflowCheck(ip, textLine, lineNumber); 
 
@@ -42,6 +39,10 @@ namespace SysProgLaba1Shared
                 if (endFlag) break;
 
                 codeLine = GetCodeLineFromSource(line, lineNumber); 
+
+                // Проверяем, что первая директива - это START
+                if (!startFlag && codeLine.Command?.ToUpper() != "START") 
+                    throw new AssemblerException(ErrorFormatter.Format(lineNumber, "Первой директивой программы должна быть START", textLine));
 
                 // Сначала обрабатываем метку
                 if(codeLine.Label != null)
@@ -88,7 +89,7 @@ namespace SysProgLaba1Shared
                 case "START":
                     {
                         if (codeLine.FirstOperand == null) 
-                            throw new AssemblerException(ErrorFormatter.DirectiveRequiresOperand(lineNumber, "START", "ненулевое значение адреса", textLine));
+                            throw new AssemblerException(ErrorFormatter.DirectiveRequiresOperand(lineNumber, "START", "значение адреса", textLine));
 
                         if (codeLine.SecondOperand != null) 
                             throw new AssemblerException(ErrorFormatter.DirectiveTooManyOperands(lineNumber, "START", textLine));
@@ -115,9 +116,6 @@ namespace SysProgLaba1Shared
 
                         // Проверяем границы выделенной памяти
                         OverflowCheck(address, textLine, lineNumber); 
-
-                        if (address == 0) 
-                            throw new AssemblerException(ErrorFormatter.AddressCannotBeZero(lineNumber, textLine));
 
                         if(codeLine.Label == null) 
                             throw new AssemblerException(ErrorFormatter.LabelRequired(lineNumber, "START", textLine));
@@ -209,11 +207,14 @@ namespace SysProgLaba1Shared
                                 ValidateXString(codeLine.FirstOperand, lineNumber, textLine);
                                 string symbols = codeLine.FirstOperand.Trim('X').Trim('\"');
 
+                                // X-строка: каждые 2 hex-символа = 1 байт
+                                int byteCount = symbols.Length / 2;
+
                                 // Проверяем переполнение выделенной памяти
-                                OverflowCheck(ip + symbols.Length, textLine, lineNumber);
+                                OverflowCheck(ip + byteCount, textLine, lineNumber);
 
                                 firstPassLine = $"{ip:X6} {"BYTE"} {codeLine.FirstOperand.ToUpper()}";
-                                ip += symbols.Length;
+                                ip += byteCount;
                                 break;
                             }
                             else
@@ -418,13 +419,19 @@ namespace SysProgLaba1Shared
                 case 4:
                     {
                         if (codeLine.FirstOperand == null) 
-                            throw new AssemblerException(ErrorFormatter.CommandRequiresOperand(lineNumber, command.Name, "метку или адрес", textLine));
+                            throw new AssemblerException(ErrorFormatter.CommandRequiresOperand(lineNumber, command.Name, "метку, адрес или [метку] для относительной адресации", textLine));
                         
                         if (codeLine.SecondOperand != null) 
                             throw new AssemblerException(ErrorFormatter.CommandTooManyOperands(lineNumber, command.Name, textLine));
 
+                        // Проверяем, используется ли относительная адресация (операнд в квадратных скобках)
+                        bool isRelativeAddressing = codeLine.FirstOperand.StartsWith("[") && codeLine.FirstOperand.EndsWith("]");
+                        string operandWithoutBrackets = isRelativeAddressing 
+                            ? codeLine.FirstOperand.Substring(1, codeLine.FirstOperand.Length - 2) 
+                            : codeLine.FirstOperand;
+
                         // Сначала пытаемся распарсить как число
-                        if (TryParseNumber(codeLine.FirstOperand, out var value))
+                        if (TryParseNumber(operandWithoutBrackets, out var value))
                         {
                             if(value < 0 || value > 16777215) 
                                 throw new AssemblerException(ErrorFormatter.AddressOutOfRange(lineNumber, value, "0-16777215", textLine));
@@ -432,29 +439,31 @@ namespace SysProgLaba1Shared
                             // Проверяем переполнение выделенной памяти
                             OverflowCheck(ip + 4, textLine, lineNumber);
 
-                            // Тип адресации 01
-                            firstPassLine = $"{ip:X6} {(command.Code * 4):X2} {value:X6}";
+                            // Тип адресации: 01 для прямой, 02 для относительной
+                            int addressingType = isRelativeAddressing ? 2 : 1;
+                            firstPassLine = $"{ip:X6} {(command.Code * 4 + addressingType):X2} {value:X6}";
 
                             ip += 4;
                             break;
                         }
                         // Не число - должна быть метка, валидируем с детальными ошибками
-                        else if (IsLabel(codeLine.FirstOperand))
+                        else if (IsLabel(operandWithoutBrackets))
                         {
-                            ValidateLabel(codeLine.FirstOperand, lineNumber, textLine);
+                            ValidateLabel(operandWithoutBrackets, lineNumber, textLine);
                             
                             // Проверяем переполнение выделенной памяти
                             OverflowCheck(ip + 4, textLine, lineNumber);
 
-                            // Тип адресации 01
-                            firstPassLine = $"{ip:X6} {(command.Code * 4 + 1):X2} {codeLine.FirstOperand}"; 
+                            // Тип адресации: 01 для прямой, 02 для относительной
+                            int addressingType = isRelativeAddressing ? 2 : 1;
+                            firstPassLine = $"{ip:X6} {(command.Code * 4 + addressingType):X2} {codeLine.FirstOperand}"; 
 
                             ip += 4;
                             break;
                         }
                         else
                         {
-                            throw new AssemblerException(ErrorFormatter.InvalidFormat(lineNumber, codeLine.FirstOperand, "метку или числовой адрес", textLine));
+                            throw new AssemblerException(ErrorFormatter.InvalidFormat(lineNumber, operandWithoutBrackets, "метку или числовой адрес", textLine));
                         }
                     }
             }

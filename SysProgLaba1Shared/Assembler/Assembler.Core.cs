@@ -33,6 +33,9 @@ namespace SysProgLaba1Shared
 
         public List<SymbolicName> TSI = new(); 
 
+        // Таблица настройки (перемещений) - список адресов команд, требующих настройки при загрузке
+        public List<int> RelocationTable = new();
+
         // Вызывается в первом проходе, валидирует команды (уникальность по названию и коду) + базовая валидация
         public void SetAvailibleCommands(List<CommandDto> newAvailibleCommandsDto)
         {
@@ -72,6 +75,11 @@ namespace SysProgLaba1Shared
         public void ClearTSI()
         {
             TSI.Clear();
+        }
+
+        public void ClearRelocationTable()
+        {
+            RelocationTable.Clear();
         }
 
         public void OverflowCheck(int value, string textLine, int lineNumber = 0)

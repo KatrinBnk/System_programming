@@ -19,6 +19,30 @@
     {
       "name": "ОВП: несуществующая метка",
       "file": "./Examples/laba1/ex5.txt"
+    },
+    {
+      "name": "Лаба 2: Только прямая адресация",
+      "file": "./Examples/laba2/ex_direct.txt"
+    },
+    {
+      "name": "Лаба 2: Только относительная адресация",
+      "file": "./Examples/laba2/ex_relative.txt"
+    },
+    {
+      "name": "Лаба 2: Смешанная адресация",
+      "file": "./Examples/laba2/ex_mixed.txt"
+    },
+    {
+      "name": "Лаба 2: Прямая адресация (1)",
+      "file": "./Examples/laba2/ex14.txt"
+    },
+    {
+      "name": "Лаба 2: Относительная адресация (2)",
+      "file": "./Examples/laba2/ex15.txt"
+    },
+    {
+      "name": "Лаба 2: Смешанная адресация (3)",
+      "file": "./Examples/laba2/ex16.txt"
     }
   ]
 }

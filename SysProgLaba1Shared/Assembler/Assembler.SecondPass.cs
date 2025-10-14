@@ -36,7 +36,7 @@ namespace SysProgLaba1Shared
                         // Если WORD + 3-байтовое значение: WORD => 6 (длина) + hex значение
                         case "WORD":
                             {
-                                secondPassLine = $"{"T"} {codeLine.Label} {3:X2} {codeLine.FirstOperand:X6}";
+                                secondPassLine = $"{"T"} {codeLine.Label} {3:X2} {codeLine.FirstOperand}";
                                 break; 
                             }
 
@@ -44,31 +44,27 @@ namespace SysProgLaba1Shared
                         // BYTE + строка: BYTE => длина строки + строка, преобразованная в ASCII
                         case "BYTE":
                             {
-                                try
+                                // Проверяем, это C-строка или X-строка
+                                if (IsCString(codeLine.FirstOperand))
                                 {
-                                    int value = Convert.ToInt32(codeLine.FirstOperand, 16);
-                                    secondPassLine = $"{"T"} {codeLine.Label} {1:X2} {value:X2}";
-                                    break; 
+                                    string symbols = codeLine.FirstOperand!.Substring(2, codeLine.FirstOperand.Length-3);
+                                    int length = symbols.Length;
+                                    secondPassLine = $"{"T"} {codeLine.Label} {length:X2} {AssemblerHelper.ConvertToASCII(symbols)}";
+                                    break;
                                 }
-                                catch
+                                else if (IsXString(codeLine.FirstOperand))
                                 {
-                                    if (IsCString(codeLine.FirstOperand))
-                                    {
-                                        string symbols = codeLine.FirstOperand!.Substring(2, codeLine.FirstOperand.Length-3);
-                                        int length = symbols.Length;
-                                        secondPassLine = $"{"T"} {codeLine.Label} {length:X2} {AssemblerHelper.ConvertToASCII(symbols)}";
-                                        break;
-                                    }
-                                    else if (IsXString(codeLine.FirstOperand))
-                                    {
-                                        string symbols = codeLine.FirstOperand!.Trim('X').Trim('\"');
-                                        int length = symbols.Length;
-                                        secondPassLine = $"{"T"} {codeLine.Label} {length:X2} {symbols}";
-                                        break;
-                                    }
-                                    else{
-                                        throw new AssemblerException(ErrorFormatter.InvalidFormat(i + 1, codeLine.FirstOperand!, "числовое значение, C-строку или X-строку", textLine));
-                                    }
+                                    string symbols = codeLine.FirstOperand!.Trim('X').Trim('\"');
+                                    // X-строка: каждые 2 hex-символа = 1 байт
+                                    int length = symbols.Length / 2;
+                                    secondPassLine = $"{"T"} {codeLine.Label} {length:X2} {symbols}";
+                                    break;
+                                }
+                                // Иначе это число (уже в hex формате из первого прохода)
+                                else
+                                {
+                                    secondPassLine = $"{"T"} {codeLine.Label} {1:X2} {codeLine.FirstOperand}";
+                                    break; 
                                 }
                             }
 
@@ -122,23 +118,69 @@ namespace SysProgLaba1Shared
                                             }
                                             else // один операнд
                                             {
-                                                int length = codeLine.FirstOperand!.Length / 2;
-                                                secondPassLine = $"{"T"} {codeLine.Label} {length:X2} {codeLine.Command}{codeLine.FirstOperand!}";
+                                                // Длина = 1 байт (МКОП) + количество байтов операнда
+                                                int operandBytes = codeLine.FirstOperand!.Length / 2;
+                                                int totalLength = 1 + operandBytes;
+                                                secondPassLine = $"{"T"} {codeLine.Label} {totalLength:X2} {codeLine.Command}{codeLine.FirstOperand!}";
                                             }
                                             break;
                                         }
 
+                                    // Прямая адресация
                                     case 1:
                                         {
-                                            var symbolicName = GetSymbolicName(codeLine.FirstOperand);    
+                                            // Убираем квадратные скобки, если они есть (хотя для прямой адресации их не должно быть)
+                                            string operand = codeLine.FirstOperand!;
+                                            if (operand.StartsWith("[") && operand.EndsWith("]"))
+                                            {
+                                                operand = operand.Substring(1, operand.Length - 2);
+                                            }
+
+                                            var symbolicName = GetSymbolicName(operand);    
 
                                             if(symbolicName == null)
                                             {
-                                                throw new AssemblerException(ErrorFormatter.LabelNotFound(i + 1, codeLine.FirstOperand!, textLine));
+                                                throw new AssemblerException(ErrorFormatter.LabelNotFound(i + 1, operand, textLine));
                                             }
                                             else
                                             {
+                                                // Добавляем адрес команды в таблицу настройки (перемещений)
+                                                int commandAddress = Convert.ToInt32(codeLine.Label, 16);
+                                                RelocationTable.Add(commandAddress);
+
                                                 secondPassLine = $"{"T"} {codeLine.Label} {4:X2} {codeLine.Command}{symbolicName.Address:X6}";
+                                            }
+                                            break; 
+                                        }
+
+                                    // Относительная адресация
+                                    case 2:
+                                        {
+                                            // Убираем квадратные скобки
+                                            string operand = codeLine.FirstOperand!;
+                                            if (operand.StartsWith("[") && operand.EndsWith("]"))
+                                            {
+                                                operand = operand.Substring(1, operand.Length - 2);
+                                            }
+
+                                            var symbolicName = GetSymbolicName(operand);    
+
+                                            if(symbolicName == null)
+                                            {
+                                                throw new AssemblerException(ErrorFormatter.LabelNotFound(i + 1, operand, textLine));
+                                            }
+                                            else
+                                            {
+                                                // Вычисляем смещение: адрес метки - адрес следующей команды
+                                                int currentAddress = Convert.ToInt32(codeLine.Label, 16);
+                                                int nextAddress = currentAddress + 4; // Команда длиной 4 байта
+                                                int offset = symbolicName.Address - nextAddress;
+
+                                                // Смещение может быть отрицательным (для переходов назад)
+                                                // Представляем его как беззнаковое 24-битное значение
+                                                int offsetAsUnsigned = offset & 0xFFFFFF;
+
+                                                secondPassLine = $"{"T"} {codeLine.Label} {4:X2} {codeLine.Command}{offsetAsUnsigned:X6}";
                                             }
                                             break; 
                                         }
@@ -158,6 +200,12 @@ namespace SysProgLaba1Shared
             
             if (endAddress < startAddress || endAddress > ip) 
                 throw new AssemblerException(ErrorFormatter.EntryPointOutOfProgram(endAddress, startAddress, ip));
+
+            // Добавляем M-записи (таблица настройки/перемещений) перед точкой входа
+            foreach (var address in RelocationTable)
+            {
+                secondPassCode.Add($"{"M"} {address:X6}");
+            }
 
             secondPassCode.Add($"{"E"} {endAddress:X6}"); 
 

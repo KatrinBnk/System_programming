@@ -51,6 +51,9 @@ namespace SysProgLaba1
         //Двоичный код (результат второго прохода)
         private TextBox SecondPassTextBox { get; set; } 
 
+        // Таблица настройки (перемещений)
+        private TextBox RelocationTableTextBox { get; set; }
+
         // Ошибки первого прохода 
         private TextBox FirstPassErrorsTextBox { get; set; }
 
@@ -86,6 +89,7 @@ namespace SysProgLaba1
 
             FirstPassTextBox = this.FirstPass_TextBox;
             SecondPassTextBox = this.SecondPass_TextBox; 
+            RelocationTableTextBox = this.RelocationTable_TextBox;
 
             TSITextBox = this.TSI_TextBox;
 
@@ -160,6 +164,7 @@ namespace SysProgLaba1
             
             // Очищаем результаты второго прохода
             SecondPassTextBox.Text = null;
+            RelocationTableTextBox.Text = null;
             SecondPassErrorsTextBox.Text = null;
 
             try
@@ -190,14 +195,17 @@ namespace SysProgLaba1
         private void SecondPass_ButtonClick(object sender, RoutedEventArgs e)
         {
             SecondPassTextBox.Text = null;
+            RelocationTableTextBox.Text = null;
             SecondPassErrorsTextBox.Text = null;
 
             if (FirstPassTextBox.Text == String.Empty) return; 
 
             try
             {
+                Assembler.ClearRelocationTable();
                 var firstPassCode = Parser.ParseCode(FirstPassTextBox.Text); 
                 SecondPassTextBox.Text = string.Join("\n", Assembler.SecondPass(firstPassCode));
+                RelocationTableTextBox.Text = string.Join("\n", Assembler.RelocationTable.Select(addr => $"{addr:X6}"));
             }
             catch(AssemblerException ex)
             {
@@ -214,10 +222,12 @@ namespace SysProgLaba1
             TSITextBox.Text = null;
             FirstPassErrorsTextBox.Text = null;
             SecondPassTextBox.Text = null;
+            RelocationTableTextBox.Text = null;
             SecondPassErrorsTextBox.Text = null;
             
-            // Очистка ТСИ в ассемблере
+            // Очистка ТСИ и таблицы настройки в ассемблере
             Assembler.ClearTSI();
+            Assembler.ClearRelocationTable();
             
             // Отключаем кнопку второго прохода (нужен новый первый проход)
             SecondPassButton.IsEnabled = false;

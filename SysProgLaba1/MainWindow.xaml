@@ -75,9 +75,9 @@
             <TextBox Name="TSI_TextBox" IsReadOnly="True" Height="150" HorizontalAlignment="Stretch" Margin="5"
                      Background="{DynamicResource ControlBackgroundBrush}" Foreground="{DynamicResource TextBrush}" BorderBrush="{DynamicResource BorderBrush}"/>
 
-            <TextBlock HorizontalAlignment="Center" Margin="2" Foreground="{DynamicResource TextBrush}">Ошибки первого прохода</TextBlock>
-            <TextBox Name="FirstPassErrors_TextBox" IsReadOnly="True" Height="120" HorizontalAlignment="Stretch"  TextWrapping="Wrap" Margin="5" 
-                     Foreground="{DynamicResource ErrorBrush}" Background="{DynamicResource ControlBackgroundBrush}" BorderBrush="{DynamicResource BorderBrush}"/>
+            <TextBlock HorizontalAlignment="Center" Margin="2" Foreground="{DynamicResource TextBrush}">Таблица настройки (перемещений)</TextBlock>
+            <TextBox Name="RelocationTable_TextBox" IsReadOnly="True" Height="120" HorizontalAlignment="Stretch" Margin="5"
+                     Background="{DynamicResource ControlBackgroundBrush}" Foreground="{DynamicResource TextBrush}" BorderBrush="{DynamicResource BorderBrush}"/>
         </StackPanel>
 
         <!-- column 3 -->
@@ -86,8 +86,12 @@
             <TextBox Name="SecondPass_TextBox" IsReadOnly="True" Height="350" HorizontalAlignment="Stretch" Margin="5"
                      Background="{DynamicResource ControlBackgroundBrush}" Foreground="{DynamicResource TextBrush}" BorderBrush="{DynamicResource BorderBrush}"/>
 
+            <TextBlock HorizontalAlignment="Center" Margin="2" Foreground="{DynamicResource TextBrush}">Ошибки первого прохода</TextBlock>
+            <TextBox Name="FirstPassErrors_TextBox" IsReadOnly="True" Height="135" HorizontalAlignment="Stretch"  TextWrapping="Wrap" Margin="5" 
+                     Foreground="{DynamicResource ErrorBrush}" Background="{DynamicResource ControlBackgroundBrush}" BorderBrush="{DynamicResource BorderBrush}"/>
+
             <TextBlock HorizontalAlignment="Center" Margin="2" Foreground="{DynamicResource TextBrush}">Ошибки второго прохода</TextBlock>
-            <TextBox  Name="SecondPassErrors_TextBox" IsReadOnly="True" Height="120" TextWrapping="Wrap" HorizontalAlignment="Stretch" VerticalAlignment="Bottom" Margin="5" 
+            <TextBox  Name="SecondPassErrors_TextBox" IsReadOnly="True" Height="135" TextWrapping="Wrap" HorizontalAlignment="Stretch" VerticalAlignment="Bottom" Margin="5" 
                       Foreground="{DynamicResource ErrorBrush}" Background="{DynamicResource ControlBackgroundBrush}" BorderBrush="{DynamicResource BorderBrush}"/>
         </StackPanel>
 
