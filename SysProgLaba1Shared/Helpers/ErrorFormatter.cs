@@ -121,6 +121,11 @@ namespace SysProgLaba1Shared.Helpers
             return Format(lineNumber, "Адрес начала программы не может быть равен нулю.", code);
         }
 
+        public static string NegativeStartAddress(int lineNumber, int address, string code)
+        {
+            return Format(lineNumber, $"Адрес начала программы не может быть отрицательным. Получен адрес: {address}.", code);
+        }
+
         public static string EndMustBeAfterStart(int lineNumber, string code)
         {
             return Format(lineNumber, "Директива END должна быть единственной и идти после START.", code);

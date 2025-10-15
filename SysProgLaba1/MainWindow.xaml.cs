@@ -32,6 +32,7 @@ namespace SysProgLaba1
     public partial class MainWindow : Window
     {
         private Assembler Assembler {get; set; } = new Assembler();
+        private AddressingAnalyzer AddressingAnalyzer { get; set; } = new AddressingAnalyzer();
 
         // Коллекция примеров кода
         public ObservableCollection<CodeExample> CodeExamples { get; set; }
@@ -103,6 +104,9 @@ namespace SysProgLaba1
             ExamplesComboBox = this.Examples_ComboBox;
             ExamplesComboBox.ItemsSource = CodeExamples;
             ExamplesComboBox.SelectedIndex = 0; // Выбираем первый элемент по умолчанию
+
+            // Устанавливаем смешанную адресацию по умолчанию
+            Assembler.SetAddressingMode(AddressingType.Mixed);
         }
 
         private void InitializeCodeExamples()
@@ -240,6 +244,39 @@ namespace SysProgLaba1
             {
                 SourceCodeTextBox.Text = selectedExample.Code;
             }
+        }
+
+        // кнопка для анализа типа адресации
+        private void AnalyzeAddressing_ButtonClick(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var sourceCode = Parser.ParseCode(SourceCodeTextBox.Text);
+                var addressingType = AddressingAnalyzer.DetermineAddressingType(sourceCode);
+                var description = AddressingAnalyzer.GetAddressingTypeDescription(addressingType);
+                
+                FirstPassErrorsTextBox.Text = $"Анализ адресации:\nТип адресации: {addressingType}\n{description}";
+            }
+            catch (Exception ex)
+            {
+                FirstPassErrorsTextBox.Text = $"Ошибка анализа: {ex.Message}";
+            }
+        }
+
+        // обработчики RadioButton для режима адресации
+        private void DirectMode_RadioButton_Checked(object sender, RoutedEventArgs e)
+        {
+            Assembler.SetAddressingMode(AddressingType.DirectOnly);
+        }
+
+        private void RelativeMode_RadioButton_Checked(object sender, RoutedEventArgs e)
+        {
+            Assembler.SetAddressingMode(AddressingType.RelativeOnly);
+        }
+
+        private void MixedMode_RadioButton_Checked(object sender, RoutedEventArgs e)
+        {
+            Assembler.SetAddressingMode(AddressingType.Mixed);
         }
 
         private void SourceCode_TextBox_TextChanged(object sender, TextChangedEventArgs e)

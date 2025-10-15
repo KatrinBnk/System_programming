@@ -129,7 +129,6 @@ namespace SysProgLaba1Shared
                                     // Прямая адресация
                                     case 1:
                                         {
-                                            // Убираем квадратные скобки, если они есть (хотя для прямой адресации их не должно быть)
                                             string operand = codeLine.FirstOperand!;
                                             if (operand.StartsWith("[") && operand.EndsWith("]"))
                                             {

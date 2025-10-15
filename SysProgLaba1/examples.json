@@ -1,47 +1,27 @@
 {
   "examples": [
     {
-      "name": "Пример без ошибок",
-      "file": "./Examples/laba1/ex1.txt"
-    },
-    {
-      "name": "Пример без ошибок (+ 16CC)",
-      "file": "./Examples/laba1/ex2.txt"
-    },
-    {
-      "name": "ОВП: адрес точки входа вне программы (1)",
-      "file": "./Examples/laba1/ex3.txt"
-    },
-    {
-      "name": "ОВП: адрес точки входа вне программы (2)",
-      "file": "./Examples/laba1/ex4.txt"
-    },
-    {
-      "name": "ОВП: несуществующая метка",
-      "file": "./Examples/laba1/ex5.txt"
-    },
-    {
-      "name": "Лаба 2: Только прямая адресация",
+      "name": "Прямая адресация",
       "file": "./Examples/laba2/ex_direct.txt"
     },
     {
-      "name": "Лаба 2: Только относительная адресация",
-      "file": "./Examples/laba2/ex_relative.txt"
-    },
-    {
-      "name": "Лаба 2: Смешанная адресация",
-      "file": "./Examples/laba2/ex_mixed.txt"
-    },
-    {
-      "name": "Лаба 2: Прямая адресация (1)",
+      "name": "Прямая адресация (1)",
       "file": "./Examples/laba2/ex14.txt"
     },
     {
-      "name": "Лаба 2: Относительная адресация (2)",
+      "name": "Относительная адресация",
+      "file": "./Examples/laba2/ex_relative.txt"
+    },
+    {
+      "name": "Относительная адресация (2)",
       "file": "./Examples/laba2/ex15.txt"
     },
     {
-      "name": "Лаба 2: Смешанная адресация (3)",
+      "name": "Смешанная адресация",
+      "file": "./Examples/laba2/ex_mixed.txt"
+    },
+    {
+      "name": "Смешанная адресация (3)",
       "file": "./Examples/laba2/ex16.txt"
     }
   ]

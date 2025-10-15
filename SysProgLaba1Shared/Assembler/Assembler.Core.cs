@@ -36,6 +36,9 @@ namespace SysProgLaba1Shared
         // Таблица настройки (перемещений) - список адресов команд, требующих настройки при загрузке
         public List<int> RelocationTable = new();
 
+        // Режим адресации для валидации
+        public AddressingType? AddressingMode { get; set; } = null;
+
         // Вызывается в первом проходе, валидирует команды (уникальность по названию и коду) + базовая валидация
         public void SetAvailibleCommands(List<CommandDto> newAvailibleCommandsDto)
         {
@@ -80,6 +83,23 @@ namespace SysProgLaba1Shared
         public void ClearRelocationTable()
         {
             RelocationTable.Clear();
+        }
+
+        /// <summary>
+        /// Устанавливает режим адресации для валидации
+        /// </summary>
+        /// <param name="addressingMode">Режим адресации</param>
+        public void SetAddressingMode(AddressingType addressingMode)
+        {
+            AddressingMode = addressingMode;
+        }
+
+        /// <summary>
+        /// Очищает режим адресации
+        /// </summary>
+        public void ClearAddressingMode()
+        {
+            AddressingMode = null;
         }
 
         public void OverflowCheck(int value, string textLine, int lineNumber = 0)

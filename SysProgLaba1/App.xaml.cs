@@ -45,7 +45,7 @@ namespace SysProgLaba1
                         if (value != null && value is int intValue)
                         {
                             // 0 = темная тема, 1 = светлая тема
-                            return intValue == 0;
+                            return intValue == 1;
                         }
                     }
                 }

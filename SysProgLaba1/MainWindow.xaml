@@ -106,6 +106,16 @@
             <Button Name="Reset_Button" Height="30" Margin="10" Click="Reset_ButtonClick">Сбросить
             </Button>
 
+            <Button Name="AnalyzeAddressing_Button" Height="30" Margin="10" Click="AnalyzeAddressing_ButtonClick">Определить тип адресации
+            </Button>
+
+            <StackPanel Orientation="Horizontal" Margin="10,0,0,0">
+                <TextBlock Text="Режим адресации:" VerticalAlignment="Center" Margin="0,0,5,0" Foreground="{DynamicResource TextBrush}"/>
+                <RadioButton Name="DirectMode_RadioButton" Content="Прямая" VerticalAlignment="Center" Margin="5,0,0,0" Checked="DirectMode_RadioButton_Checked"/>
+                <RadioButton Name="RelativeMode_RadioButton" Content="Относительная" VerticalAlignment="Center" Margin="5,0,0,0" Checked="RelativeMode_RadioButton_Checked"/>
+                <RadioButton Name="MixedMode_RadioButton" Content="Смешанная" VerticalAlignment="Center" Margin="5,0,0,0" IsChecked="True" Checked="MixedMode_RadioButton_Checked"/>
+            </StackPanel>
+
             <StackPanel Orientation="Horizontal" Margin="10,0,0,0">
                 <TextBlock Text="Примеры:" VerticalAlignment="Center" Margin="0,0,5,0" Foreground="{DynamicResource TextBrush}"/>
                 <ComboBox Name="Examples_ComboBox" Width="250" Height="30" VerticalAlignment="Center"

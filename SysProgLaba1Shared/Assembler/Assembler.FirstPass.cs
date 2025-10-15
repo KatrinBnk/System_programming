@@ -114,6 +114,10 @@ namespace SysProgLaba1Shared
                             throw new AssemblerException(ErrorFormatter.InvalidFormat(lineNumber, codeLine.FirstOperand, "число (десятичное или шестнадцатеричное с суффиксом 'h')", textLine));
                         }
 
+                        // Проверяем, что адрес не отрицательный
+                        if (address < 0)
+                            throw new AssemblerException(ErrorFormatter.NegativeStartAddress(lineNumber, address, textLine));
+
                         // Проверяем границы выделенной памяти
                         OverflowCheck(address, textLine, lineNumber); 
 
@@ -430,6 +434,9 @@ namespace SysProgLaba1Shared
                             ? codeLine.FirstOperand.Substring(1, codeLine.FirstOperand.Length - 2) 
                             : codeLine.FirstOperand;
 
+                        // Валидация режима адресации
+                        ValidateAddressingMode(isRelativeAddressing, lineNumber, textLine);
+
                         // Сначала пытаемся распарсить как число
                         if (TryParseNumber(operandWithoutBrackets, out var value))
                         {
@@ -469,6 +476,42 @@ namespace SysProgLaba1Shared
             }
 
             return firstPassLine;
+        }
+
+        /// <summary>
+        /// Валидирует соответствие типа адресации установленному режиму
+        /// </summary>
+        /// <param name="isRelativeAddressing">Используется ли относительная адресация</param>
+        /// <param name="lineNumber">Номер строки</param>
+        /// <param name="textLine">Текст строки</param>
+        private void ValidateAddressingMode(bool isRelativeAddressing, int lineNumber, string textLine)
+        {
+            if (AddressingMode == null) return; // Режим не установлен - валидация не требуется
+
+            switch (AddressingMode.Value)
+            {
+                case AddressingType.DirectOnly:
+                    if (isRelativeAddressing)
+                    {
+                        throw new AssemblerException(ErrorFormatter.Format(lineNumber, 
+                            "Относительная адресация запрещена в режиме 'только прямая адресация'. Используйте прямую адресацию без квадратных скобок.", 
+                            textLine));
+                    }
+                    break;
+
+                case AddressingType.RelativeOnly:
+                    if (!isRelativeAddressing)
+                    {
+                        throw new AssemblerException(ErrorFormatter.Format(lineNumber, 
+                            "Прямая адресация запрещена в режиме 'только относительная адресация'. Используйте относительную адресацию с квадратными скобками [операнд].", 
+                            textLine));
+                    }
+                    break;
+
+                case AddressingType.Mixed:
+                    // В смешанном режиме все типы адресации разрешены
+                    break;
+            }
         }
     }
 }
