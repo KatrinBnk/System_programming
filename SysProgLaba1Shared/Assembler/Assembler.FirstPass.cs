@@ -113,6 +113,10 @@ namespace SysProgLaba1Shared
                             throw new AssemblerException(ErrorFormatter.InvalidFormat(lineNumber, codeLine.FirstOperand, "число (десятичное или шестнадцатеричное с суффиксом 'h')", textLine));
                         }
 
+                        // Проверяем, что адрес не отрицательный
+                        if (address < 0)
+                            throw new AssemblerException(ErrorFormatter.NegativeAddressNotAllowed(lineNumber, address, textLine));
+
                         // Проверяем границы выделенной памяти
                         OverflowCheck(address, textLine, lineNumber); 
 

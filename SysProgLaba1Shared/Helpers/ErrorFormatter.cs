@@ -8,7 +8,7 @@ namespace SysProgLaba1Shared.Helpers
         // Базовое форматирование с номером строки
         public static string Format(int lineNumber, string message, string code)
         {
-            return $"[Строка {lineNumber}] {message}\nКод: {code}";
+            return $"[Строка {lineNumber}] {message}\nСодержимое строки: {code}";
         }
 
         // Форматирование без номера строки
@@ -119,6 +119,11 @@ namespace SysProgLaba1Shared.Helpers
         public static string AddressCannotBeZero(int lineNumber, string code)
         {
             return Format(lineNumber, "Адрес начала программы не может быть равен нулю.", code);
+        }
+
+        public static string NegativeAddressNotAllowed(int lineNumber, int address, string code)
+        {
+            return Format(lineNumber, $"Адрес начала программы не может быть отрицательным.", code);
         }
 
         public static string EndMustBeAfterStart(int lineNumber, string code)

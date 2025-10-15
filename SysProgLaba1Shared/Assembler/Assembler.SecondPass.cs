@@ -62,7 +62,7 @@ namespace SysProgLaba1Shared
                                     else if (IsXString(codeLine.FirstOperand))
                                     {
                                         string symbols = codeLine.FirstOperand!.Trim('X').Trim('\"');
-                                        int length = symbols.Length;
+                                        int length = symbols.Length / 2;
                                         secondPassLine = $"{"T"} {codeLine.Label} {length:X2} {symbols}";
                                         break;
                                     }
@@ -72,7 +72,7 @@ namespace SysProgLaba1Shared
                                 }
                             }
 
-                        // Если RESB/RESW: только длина
+                        // Если RESB/RESW
                         case "RESB":
                             {
                                 int length;
@@ -122,7 +122,7 @@ namespace SysProgLaba1Shared
                                             }
                                             else // один операнд
                                             {
-                                                int length = codeLine.FirstOperand!.Length / 2;
+                                                int length = codeLine.Command.Length / 2 + codeLine.FirstOperand!.Length / 2;
                                                 secondPassLine = $"{"T"} {codeLine.Label} {length:X2} {codeLine.Command}{codeLine.FirstOperand!}";
                                             }
                                             break;
