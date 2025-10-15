@@ -122,8 +122,9 @@ namespace SysProgLaba1Shared
                                             }
                                             else // один операнд
                                             {
-                                                int length = codeLine.Command.Length / 2 + codeLine.FirstOperand!.Length / 2;
-                                                secondPassLine = $"{"T"} {codeLine.Label} {length:X2} {codeLine.Command}{codeLine.FirstOperand!}";
+                                                int commandCode = Convert.ToInt32(codeLine.Command, 16) >> 2; // Убираем биты адресации
+                                                var command = AvailibleCommands.Find(c => c.Code == commandCode); // находим команду в списке доступных
+                                                secondPassLine = $"{"T"} {codeLine.Label} {command.Length:X2} {codeLine.Command}{codeLine.FirstOperand!}";
                                             }
                                             break;
                                         }
