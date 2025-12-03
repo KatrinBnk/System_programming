@@ -196,7 +196,7 @@ namespace SysProgLaba1Shared
                             if (IsCString(codeLine.FirstOperand))
                             {
                                 ValidateCString(codeLine.FirstOperand, lineNumber, textLine);
-                                string symbols = codeLine.FirstOperand.Trim('C').Trim('\"');
+                                string symbols = codeLine.FirstOperand!.Substring(2, codeLine.FirstOperand.Length - 3); ;
 
                                 // Проверяем переполнение выделенной памяти
                                 OverflowCheck(ip + symbols.Length, textLine, lineNumber); 
@@ -209,7 +209,7 @@ namespace SysProgLaba1Shared
                             else if (IsXString(codeLine.FirstOperand))
                             {
                                 ValidateXString(codeLine.FirstOperand, lineNumber, textLine);
-                                string symbols = codeLine.FirstOperand.Trim('X').Trim('\"');
+                                string symbols = codeLine.FirstOperand!.Substring(2, codeLine.FirstOperand.Length - 3); ;
 
                                 // X-строка: каждые 2 hex-символа = 1 байт
                                 int byteCount = symbols.Length / 2;

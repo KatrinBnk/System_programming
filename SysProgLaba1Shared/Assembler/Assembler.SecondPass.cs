@@ -54,7 +54,7 @@ namespace SysProgLaba1Shared
                                 }
                                 else if (IsXString(codeLine.FirstOperand))
                                 {
-                                    string symbols = codeLine.FirstOperand!.Trim('X').Trim('\"');
+                                    string symbols = codeLine.FirstOperand!.Substring(2, codeLine.FirstOperand.Length - 3);
                                     // X-строка: каждые 2 hex-символа = 1 байт
                                     int length = symbols.Length / 2;
                                     secondPassLine = $"{"T"} {codeLine.Label} {length:X2} {symbols}";
