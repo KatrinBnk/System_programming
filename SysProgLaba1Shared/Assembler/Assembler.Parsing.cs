@@ -44,7 +44,9 @@ namespace SysProgLaba1Shared
 
                 case 2:
                     // Может быть команда с одним операндом или директива с одним операндом
-                    if (IsCommand(line[0]) || IsDirective(line[0]))
+                    // EXTDEF и EXTREF могут быть без метки
+                    // CSECT не может быть без метки
+                    if (IsCommand(line[0]) || (IsDirective(line[0]) && line[0].ToUpper() != "CSECT"))
                     {
                         return new CodeLine()
                         {
@@ -54,8 +56,8 @@ namespace SysProgLaba1Shared
                             SecondOperand = null
                         };
                     }
-                    // Может быть метка и команда без операндов или START/END
-                    else if (IsCommand(line[1]) || line[1].ToUpper() == "START" || line[1].ToUpper() == "END")
+                    // Может быть метка и команда без операндов или START/END/CSECT
+                    else if (IsCommand(line[1]) || line[1].ToUpper() == "START" || line[1].ToUpper() == "END" || line[1].ToUpper() == "CSECT")
                     {
                         // Валидируем метку с детальными ошибками
                         ValidateLabel(line[0], lineNumber, textLine);
@@ -105,8 +107,8 @@ namespace SysProgLaba1Shared
                         
                         throw new AssemblerException(ErrorFormatter.InvalidOperandFormat(lineNumber, combinedOperand, expectedFormats, textLine));
                     }
-                    // Может быть метка и директива с одним операндом
-                    else if (IsCommand(line[1]) || IsDirective(line[1]))
+                    // Может быть метка и директива с одним операндом (включая CSECT с операндом)
+                    else if (IsCommand(line[1]) || (IsDirective(line[1]) && line[1].ToUpper() != "EXTDEF" && line[1].ToUpper() != "EXTREF"))
                     {
                         // Валидируем метку с детальными ошибками
                         ValidateLabel(line[0], lineNumber, textLine);
@@ -174,24 +176,35 @@ namespace SysProgLaba1Shared
         {
             var textLine = string.Join(" ", line);
 
-            if (line.Count < 2)
-                throw new AssemblerException(ErrorFormatter.Format(lineNumber, $"Строка вспомогательной таблицы слишком короткая ({line.Count} элемента). Ожидается минимум 2.", textLine));
-            
-            if (line.Count > 4)
-                throw new AssemblerException(ErrorFormatter.Format(lineNumber, $"Строка вспомогательной таблицы слишком длинная ({line.Count} элементов). Максимум 4.", textLine));
+            if (line.Count < 2 || line.Count > 4)
+                throw new AssemblerException(ErrorFormatter.Format(lineNumber, "Неверный формат команды.", textLine));
 
             switch (line.Count)
             {
                 case 2:
                     {
-                        // ip + operand-less command  
-                        return new CodeLine()
+                        if (line[0].ToUpper() == "EXTDEF" || line[0].ToUpper() == "EXTREF")
                         {
-                            Label = line[0].ToUpper(),
-                            Command = line[1].ToUpper(),
-                            FirstOperand = null,
-                            SecondOperand = null
-                        };
+                            // EXTDEF/EXTREF + Label 
+                            return new CodeLine()
+                            {
+                                Label = null,
+                                Command = line[0].ToUpper(),
+                                FirstOperand = line[1],
+                                SecondOperand = null
+                            };
+                        }
+                        else
+                        {
+                            // ip + operand-less command  
+                            return new CodeLine()
+                            {
+                                Label = line[0].ToUpper(),
+                                Command = line[1].ToUpper(),
+                                FirstOperand = null,
+                                SecondOperand = null
+                            };
+                        }
                     }
 
                 case 3:
@@ -219,7 +232,7 @@ namespace SysProgLaba1Shared
                     }
 
                 default:
-                    throw new AssemblerException(ErrorFormatter.Format(lineNumber, "Внутренняя ошибка парсера вспомогательной таблицы: неожиданное количество элементов.", textLine));
+                    throw new AssemblerException(ErrorFormatter.Format(lineNumber, "Неверный формат команды.", textLine));
             }
         }
     }

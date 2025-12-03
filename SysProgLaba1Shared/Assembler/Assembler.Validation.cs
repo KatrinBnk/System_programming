@@ -70,6 +70,24 @@ namespace SysProgLaba1Shared
             return content.All(c => c <= 127);
         }
 
+        /// <summary>
+        /// Проверяет, является ли строка относительной меткой (в квадратных скобках)
+        /// </summary>
+        public bool IsRelativeLabel(string? chunk)
+        {
+            if (chunk == null) return false;
+
+            if (chunk.Length < 3) return false;
+
+            if (!chunk.StartsWith('[') || !chunk.EndsWith(']')) return false;
+
+            var symbols = chunk.Substring(1, chunk.Length - 2);
+
+            if (IsLabel(symbols)) return true;
+
+            return false; 
+        }
+
         // ========== Валидация с детальными ошибками (используют ErrorFormatter) ==========
 
         /// <summary>

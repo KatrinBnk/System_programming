@@ -10,7 +10,18 @@ namespace SysProgLaba1Shared
     public partial class Assembler 
     {
         /// <summary>
-        /// Находит символическое имя (метку) в таблице TSI
+        /// Находит символическое имя (метку) в таблице TSI для указанной секции
+        /// </summary>
+        public SymbolicName? GetSymbolicName(string? labelName, string section)
+        {
+            if (string.IsNullOrEmpty(labelName))
+                return null;
+            
+            return TSI.Where(sn => sn.Section == section).ToList().Find(n => n.Name.ToUpper() == labelName.ToUpper());
+        }
+
+        /// <summary>
+        /// Находит символическое имя (метку) в таблице TSI (старый метод для обратной совместимости)
         /// </summary>
         public SymbolicName? GetSymbolicName(string? labelName)
         {

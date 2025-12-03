@@ -15,8 +15,12 @@ namespace SysProgLaba1Shared
     {
         private const int maxAddress = (1 << 24) - 1;  // 2^24 - 1 = 16777215  
         private int startAddress = 0;
-        private int endAddress = 0;
         private int ip = 0; 
+        private int second_ip = 0; // Счетчик адресов во втором проходе
+
+        // Список секций программы
+        private List<Section> Sections = new List<Section>();
+        private Section currentSection = new Section();
 
         // Список базовых команд (используются в примерах, дополняются через ЮИ)
         public List<Command> AvailibleCommands { get; set; } = [
@@ -28,13 +32,13 @@ namespace SysProgLaba1Shared
             new Command(){ Name = "INT", Code = 6, Length = 2 },
         ];
 
-        // Директивы
-        private readonly string[] AvailibleDirectives = ["START", "END", "WORD", "BYTE", "RESB", "RESW"]; 
+        // Директивы (добавлены EXTREF, EXTDEF, CSECT для полноперемещаемого формата)
+        private readonly string[] AvailibleDirectives = ["START", "END", "WORD", "BYTE", "RESB", "RESW", "EXTREF", "EXTDEF", "CSECT"]; 
 
         public List<SymbolicName> TSI = new(); 
 
-        // Таблица настройки (перемещений) - список адресов команд, требующих настройки при загрузке
-        public List<int> RelocationTable = new();
+        // Таблица настройки (перемещений) - для полноперемещаемого формата
+        public List<TNLine> TN = new();
 
         // Режим адресации для валидации
         public AddressingType? AddressingMode { get; set; } = null;
@@ -67,12 +71,90 @@ namespace SysProgLaba1Shared
             this.AvailibleCommands = newAvailibleCommands; 
         }
 
+        /// <summary>
+        /// Добавляет символическое имя в TSI (для полноперемещаемого формата)
+        /// </summary>
+        public void PushToTSI(string symbolicName, int address, string section, string type, string textLine)
+        {
+            symbolicName = symbolicName.ToUpper();
+
+            // Проверяем, есть ли уже такая метка в этой секции
+            if(TSI.Where(sn => sn.Section == section).Select(n => n.Name).Contains(symbolicName))
+            {
+                var sn = TSI.Where(sn => sn.Section == section).First(n => n.Name == symbolicName);
+
+                if (sn.Type == "ВИ") // Внешний идентификатор (EXTDEF)
+                {
+                    if (type == "ВИ" || type == "ВС") // Дублирование EXTDEF не допускается
+                    {
+                        throw new AssemblerException(ErrorFormatter.LabelAlreadyDefined(0, symbolicName, textLine));
+                    }
+                    else // Устанавливаем адрес для EXTDEF
+                    {
+                        if (sn.Address == -1 && address != -1)
+                        {
+                            sn.Address = address;
+                            return;
+                        }
+                        else
+                            throw new AssemblerException(ErrorFormatter.LabelAlreadyDefined(0, symbolicName, textLine));
+                    }
+                }
+                else
+                    throw new AssemblerException(ErrorFormatter.LabelAlreadyDefined(0, symbolicName, textLine));
+            }
+
+            TSI.Add(new SymbolicName()
+            {
+                Name = symbolicName.ToUpper(),
+                Address = address,
+                Section = section,
+                Type = type
+            });
+        }
+
+        /// <summary>
+        /// Добавляет символическое имя в TSI (старый метод для обратной совместимости)
+        /// </summary>
         public void PushToTSI(string symbolicName, int address)
         {
-            TSI.Add(new SymbolicName() {
-                Name = symbolicName,
-                Address = address 
-            });
+            PushToTSI(symbolicName, address, currentSection.Name, string.Empty, string.Empty);
+        }
+
+        /// <summary>
+        /// Проверяет, что всем внешним именам (EXTDEF) присвоены адреса
+        /// </summary>
+        public void TSICheck()
+        {
+            if (TSI.Any(n => n.Type == "ВИ" && n.Address == -1))
+                throw new AssemblerException("Не всем внешним именам было присвоено значение");
+        }
+
+        /// <summary>
+        /// Добавляет запись в таблицу настройки (TN)
+        /// </summary>
+        public void PushToTN(string address, string? label, string section)
+        {
+            var tnLine = new TNLine() { 
+                Address = address, 
+                Label = label, 
+                Section = section 
+            };
+
+            TN.Add(tnLine); 
+        }
+
+        /// <summary>
+        /// Добавляет секцию в список секций
+        /// </summary>
+        public void AddSection(Section section)
+        {
+            if(Sections.Select(s => s.Name).Contains(section.Name))
+                throw new AssemblerException($"Все имена секций должны быть уникальными: {section.Name}");
+
+            OverflowCheck(Sections.Sum(s => s.Length) + section.Length, $"{section.Name}", 0); 
+
+            Sections.Add(section); 
         }
 
         public void ClearTSI()
@@ -80,9 +162,19 @@ namespace SysProgLaba1Shared
             TSI.Clear();
         }
 
+        public void ClearTN()
+        {
+            TN.Clear();
+        }
+
+        public void ClearSections()
+        {
+            Sections.Clear(); 
+        }
+
         public void ClearRelocationTable()
         {
-            RelocationTable.Clear();
+            TN.Clear();
         }
 
         /// <summary>
@@ -102,12 +194,18 @@ namespace SysProgLaba1Shared
             AddressingMode = null;
         }
 
-        public void OverflowCheck(int value, string textLine, int lineNumber = 0)
+        public void OverflowCheck(int value, string textLine)
         {
             if (value < 0 || value > maxAddress)
-            {
-                throw new AssemblerException(ErrorFormatter.MemoryOverflow(value, maxAddress, textLine, lineNumber));
-            }
+                throw new AssemblerException($"Выход за границы выделенной памяти: {textLine}");
+        }
+
+        /// <summary>
+        /// Перегрузка для обратной совместимости
+        /// </summary>
+        public void OverflowCheck(int value, string textLine, int lineNumber)
+        {
+            OverflowCheck(value, textLine);
         }
     }
 }

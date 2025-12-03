@@ -33,6 +33,7 @@ namespace SysProgLaba1
     {
         private Assembler Assembler {get; set; } = new Assembler();
         private AddressingAnalyzer AddressingAnalyzer { get; set; } = new AddressingAnalyzer();
+        private string AddressingMode { get; set; } = "Mixed";
 
         // Коллекция примеров кода
         public ObservableCollection<CodeExample> CodeExamples { get; set; }
@@ -106,7 +107,7 @@ namespace SysProgLaba1
             ExamplesComboBox.SelectedIndex = 0; // Выбираем первый элемент по умолчанию
 
             // Устанавливаем смешанную адресацию по умолчанию
-            Assembler.SetAddressingMode(AddressingType.Mixed);
+            AddressingMode = "Mixed";
         }
 
         private void InitializeCodeExamples()
@@ -181,10 +182,12 @@ namespace SysProgLaba1
                 Assembler.SetAvailibleCommands(newCommands);
 
                 Assembler.ClearTSI();
+                Assembler.ClearTN();
+                Assembler.ClearSections();
 
                 var sourceCode = Parser.ParseCode(SourceCodeTextBox.Text); 
-                FirstPassTextBox.Text = string.Join("\n", Assembler.FirstPass(sourceCode));
-                TSITextBox.Text = string.Join("\n", Assembler.TSI.Select(w => $"{w.Name} {w.Address.ToString("X6")}")); 
+                FirstPassTextBox.Text = string.Join("\n", Assembler.FirstPass(sourceCode, AddressingMode));
+                TSITextBox.Text = string.Join("\n", Assembler.TSI.Select(w => $"{w.Name}\t{((w.Address >= 0)? w.Address.ToString("X6") : string.Empty)}\t{w.Section}\t{w.Type}")); 
                 
                 // Первый проход успешен - включаем кнопку второго прохода
                 SecondPassButton.IsEnabled = true;
@@ -206,10 +209,13 @@ namespace SysProgLaba1
 
             try
             {
-                Assembler.ClearRelocationTable();
+                Assembler.ClearTN();
                 var firstPassCode = Parser.ParseCode(FirstPassTextBox.Text); 
                 SecondPassTextBox.Text = string.Join("\n", Assembler.SecondPass(firstPassCode));
-                RelocationTableTextBox.Text = string.Join("\n", Assembler.RelocationTable.Select(addr => $"{addr:X6}"));
+                RelocationTableTextBox.Text = string.Join("\n", Assembler.TN.Select(tn => 
+                    string.IsNullOrEmpty(tn.Label) 
+                        ? $"{tn.Address}" 
+                        : $"{tn.Address}\t{tn.Label}"));
             }
             catch(AssemblerException ex)
             {
@@ -231,7 +237,7 @@ namespace SysProgLaba1
             
             // Очистка ТСИ и таблицы настройки в ассемблере
             Assembler.ClearTSI();
-            Assembler.ClearRelocationTable();
+            Assembler.ClearTN();
             
             // Отключаем кнопку второго прохода (нужен новый первый проход)
             SecondPassButton.IsEnabled = false;
@@ -266,17 +272,17 @@ namespace SysProgLaba1
         // обработчики RadioButton для режима адресации
         private void DirectMode_RadioButton_Checked(object sender, RoutedEventArgs e)
         {
-            Assembler.SetAddressingMode(AddressingType.DirectOnly);
+            AddressingMode = "Straight";
         }
 
         private void RelativeMode_RadioButton_Checked(object sender, RoutedEventArgs e)
         {
-            Assembler.SetAddressingMode(AddressingType.RelativeOnly);
+            AddressingMode = "Relative";
         }
 
         private void MixedMode_RadioButton_Checked(object sender, RoutedEventArgs e)
         {
-            Assembler.SetAddressingMode(AddressingType.Mixed);
+            AddressingMode = "Mixed";
         }
 
         private void SourceCode_TextBox_TextChanged(object sender, TextChangedEventArgs e)
