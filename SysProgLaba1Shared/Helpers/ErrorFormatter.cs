@@ -116,9 +116,9 @@ namespace SysProgLaba1Shared.Helpers
             return Format(lineNumber, "Директива START должна быть первой в программе и встречаться только один раз.", code);
         }
 
-        public static string AddressCannotBeZero(int lineNumber, string code)
+        public static string StartAddressMustBeZero(int lineNumber, string code)
         {
-            return Format(lineNumber, "Адрес начала программы не может быть равен нулю.", code);
+            return Format(lineNumber, "Адрес начала программы должен быть равен нулю.", code);
         }
 
         public static string NegativeStartAddress(int lineNumber, int address, string code)

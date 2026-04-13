@@ -14,7 +14,7 @@ int failed = 0;
 // ═══════════════════════════════════════════════════════════
 
 RunPositive("forward_ref: оба прохода без ошибок", @"
-PROG START 100h
+PROG START 0
      JMP NEXT
      LOADR1 A1
      LOADR2 A2
@@ -24,11 +24,11 @@ NEXT ADD R1 R2
 A1 WORD 10
 A2 WORD 20
 B WORD 1
-     END 100h
+     END
 ", expectMRecords: 4);
 
 RunPositive("backward_ref: относительная, нет M-записей", @"
-PROG START 100h
+PROG START 0
 A1 WORD 10
 A2 WORD 20
 B WORD 1
@@ -38,22 +38,22 @@ LOOP LOADR1 [A1]
      SAVER1 [B]
      JMP [LOOP]
      INT 0
-     END 100h
+     END
 ", expectMRecords: 0);
 
 RunPositive("self_jump: самопереход offset=-4", @"
-PROG START 100h
+PROG START 0
 LOOP JMP [LOOP]
      INT 0
-     END 100h
+     END
 ", expectMRecords: 0, secondPassContains: "06FFFFFC");
 
 RunPositive("no_memory_ops: только 2-байтовые, пустая таблица", @"
-PROG START 100h
+PROG START 0
      ADD R1 R2
      ADD R1 R1
      INT 0
-     END 100h
+     END
 ", expectMRecords: 0);
 
 RunPositive("data_heavy: WORD, BYTE, C-строка, X-строка, RESB, RESW", @"
@@ -82,19 +82,19 @@ RES WORD 1
 ", expectMRecords: 2);
 
 RunPositive("numeric_operand: числовой адрес — тест багфикса", @"
-PROG START 100h
+PROG START 0
      JMP 150h
      LOADR1 200h
      INT 0
-     END 100h
+     END
 ", expectMRecords: 0);
 
 RunPositive("next_instr_jump: offset=0", @"
-PROG START 100h
+PROG START 0
      JMP [NEXT]
 NEXT ADD R1 R2
      INT 0
-     END 100h
+     END
 ", expectMRecords: 0, secondPassContains: "06000000");
 
 
@@ -111,95 +111,99 @@ RunNegativeFirstPass("START без операнда",
     "требует один операнд");
 
 RunNegativeFirstPass("START без метки",
-    "START 100h\nEND",
+    "START 0\nEND",
     "метка");
 
 RunNegativeFirstPass("Двойной START",
-    "PROG START 100h\nPROG2 START 200h\nEND",
+    "PROG START 0\nPROG2 START 0\nEND",
     "START");
 
 RunNegativeFirstPass("Нет END",
-    "PROG START 100h\nADD R1 R2",
+    "PROG START 0\nADD R1 R2",
     "END");
 
 RunNegativeFirstPass("Дублирование метки",
-    "PROG START 100h\nA WORD 1\nA WORD 2\nEND",
+    "PROG START 0\nA WORD 1\nA WORD 2\nEND",
     "уже определена");
 
 RunNegativeFirstPass("Неизвестная команда (парсер ловит раньше)",
-    "PROG START 100h\nFOOBAR 100h\nEND",
+    "PROG START 0\nFOOBAR 100h\nEND",
     "не является командой");
 
 RunNegativeFirstPass("WORD без операнда (парсер: 1 элемент — не команда)",
-    "PROG START 100h\nWORD\nEND",
+    "PROG START 0\nWORD\nEND",
     "не является известной командой");
 
 RunNegativeFirstPass("WORD значение 0 (вне диапазона)",
-    "PROG START 100h\nWORD 0\nEND",
+    "PROG START 0\nWORD 0\nEND",
     "диапазон");
 
 RunNegativeFirstPass("BYTE значение 256 (вне диапазона)",
-    "PROG START 100h\nBYTE 256\nEND",
+    "PROG START 0\nBYTE 256\nEND",
     "диапазон");
 
 RunNegativeFirstPass("RESB значение 0 (вне диапазона)",
-    "PROG START 100h\nRESB 0\nEND",
+    "PROG START 0\nRESB 0\nEND",
     "диапазон");
 
 RunNegativeFirstPass("RESW значение 0 (вне диапазона)",
-    "PROG START 100h\nRESW 0\nEND",
+    "PROG START 0\nRESW 0\nEND",
     "диапазон");
 
 RunNegativeFirstPass("Команда 4 байта без операнда",
-    "PROG START 100h\nJMP\nEND",
+    "PROG START 0\nJMP\nEND",
     "требует операнд");
 
 RunNegativeFirstPass("Команда 4 байта: два операнда",
-    "PROG START 100h\nJMP A B\nEND",
+    "PROG START 0\nJMP A B\nEND",
     "только один операнд");
 
 RunNegativeFirstPass("Команда ADD без операндов",
-    "PROG START 100h\nADD\nEND",
+    "PROG START 0\nADD\nEND",
     "требует операнд");
 
 RunNegativeFirstPass("Метка начинается с цифры",
-    "PROG START 100h\n1ABC WORD 1\nEND",
+    "PROG START 0\n1ABC WORD 1\nEND",
     "");
 
 RunNegativeFirstPass("Метка — имя регистра",
-    "PROG START 100h\nR1 WORD 1\nEND",
+    "PROG START 0\nR1 WORD 1\nEND",
     "регистр");
 
 RunNegativeFirstPass("Метка — имя команды",
-    "PROG START 100h\nJMP WORD 1\nEND",
+    "PROG START 0\nJMP WORD 1\nEND",
     "");
 
 RunNegativeFirstPass("Метка — имя директивы",
-    "PROG START 100h\nWORD WORD 1\nEND",
+    "PROG START 0\nWORD WORD 1\nEND",
     "");
 
 RunNegativeFirstPass("Отрицательный адрес START",
     "PROG START -1\nEND",
     "");
 
+RunNegativeFirstPass("START с ненулевым адресом",
+    "PROG START 100h\nINT 0\nEND",
+    "нулю");
+
 RunNegativeFirstPass("END точка входа вне диапазона адресов",
-    "PROG START 100h\nINT 0\nEND FFFFFFFh",
+    "PROG START 0\nINT 0\nEND FFFFFFFh",
     "диапазон");
 
 RunNegativeSecondPass("Второй проход: точка входа за пределами программы",
     firstPassLines: new List<string> {
-        "PROG START 000100",
-        "000100 18 00"
+        "PROG START 000000",
+        "000000 18 00"
     },
     expectedFragment: "вне программы",
     overrideEndAddress: 0x999999);
 
 RunNegativeFirstPass("Прямая адресация запрещена в режиме 'относительная'",
-    "PROG START 100h\nJMP NEXT\nNEXT INT 0\nEND 100h",
+    "PROG START 0\nJMP NEXT\nNEXT INT 0\nEND",
     "адресация", AddressingType.RelativeOnly);
 
 RunNegativeFirstPass("Относительная адресация запрещена в режиме 'прямая'",
-    "PROG START 100h\nJMP [NEXT]\nNEXT INT 0\nEND 100h",
+    "PROG START 0\nJMP [NEXT]\nNEXT INT 0\nEND",
     "адресация", AddressingType.DirectOnly);
 
 
@@ -209,8 +213,8 @@ RunNegativeFirstPass("Относительная адресация запрещ
 
 RunNegativeSecondPass("Второй проход: некорректный тип адресации",
     firstPassLines: new List<string> {
-        "PROG START 000100",
-        "000100 07 000200"
+        "PROG START 000000",
+        "000000 07 000200"
     },
     expectedFragment: "тип адресации");
 

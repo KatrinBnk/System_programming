@@ -1,4 +1,4 @@
-PROG START 100h
+PROG START 0
      LOADR1 A1
      LOADR2 [A2]
      ADD R1 R2
@@ -7,5 +7,4 @@ LOOP JMP [LOOP]
 A1 WORD 10
 A2 WORD 20
 B WORD 1
-     END 100h
-
+     END

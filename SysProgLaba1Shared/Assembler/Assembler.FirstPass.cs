@@ -118,6 +118,10 @@ namespace SysProgLaba1Shared
                         if (address < 0)
                             throw new AssemblerException(ErrorFormatter.NegativeStartAddress(lineNumber, address, textLine));
 
+                        // Программа может начинаться только с нулевого адреса
+                        if (address != 0)
+                            throw new AssemblerException(ErrorFormatter.StartAddressMustBeZero(lineNumber, textLine));
+
                         // Проверяем границы выделенной памяти
                         OverflowCheck(address, textLine, lineNumber); 
 

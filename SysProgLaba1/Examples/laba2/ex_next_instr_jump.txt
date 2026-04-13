@@ -1,5 +1,5 @@
-PROG START 100h
+PROG START 0
      JMP [NEXT]
 NEXT ADD R1 R2
      INT 0
-     END 100h
+     END
