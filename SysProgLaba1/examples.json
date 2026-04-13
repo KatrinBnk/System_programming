@@ -23,6 +23,38 @@
     {
       "name": "Смешанная адресация (3)",
       "file": "./Examples/laba2/ex16.txt"
+    },
+    {
+      "name": "Опережающие ссылки (прямая)",
+      "file": "./Examples/laba2/ex_forward_ref.txt"
+    },
+    {
+      "name": "Обратные ссылки (относительная)",
+      "file": "./Examples/laba2/ex_backward_ref.txt"
+    },
+    {
+      "name": "Самопереход (offset = −4)",
+      "file": "./Examples/laba2/ex_self_jump.txt"
+    },
+    {
+      "name": "Без 4-байтовых команд",
+      "file": "./Examples/laba2/ex_no_memory_ops.txt"
+    },
+    {
+      "name": "Насыщенная данными",
+      "file": "./Examples/laba2/ex_data_heavy.txt"
+    },
+    {
+      "name": "START 0 (перемещаемый)",
+      "file": "./Examples/laba2/ex_start_zero.txt"
+    },
+    {
+      "name": "Числовой операнд",
+      "file": "./Examples/laba2/ex_numeric_operand.txt"
+    },
+    {
+      "name": "Переход на следующую (offset = 0)",
+      "file": "./Examples/laba2/ex_next_instr_jump.txt"
     }
   ]
 }

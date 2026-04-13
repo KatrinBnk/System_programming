@@ -1,0 +1,5 @@
+PROG START 100h
+     ADD R1 R2
+     ADD R1 R1
+     INT 0
+     END 100h

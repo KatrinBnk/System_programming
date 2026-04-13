@@ -1,0 +1,5 @@
+PROG START 100h
+     JMP 150h
+     LOADR1 200h
+     INT 0
+     END 100h

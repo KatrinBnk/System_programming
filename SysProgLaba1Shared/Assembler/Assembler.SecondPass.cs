@@ -137,17 +137,28 @@ namespace SysProgLaba1Shared
 
                                             var symbolicName = GetSymbolicName(operand);    
 
-                                            if(symbolicName == null)
+                                            if(symbolicName != null)
                                             {
-                                                throw new AssemblerException(ErrorFormatter.LabelNotFound(i + 1, operand, textLine));
-                                            }
-                                            else
-                                            {
-                                                // Добавляем адрес команды в таблицу настройки (перемещений)
+                                                // Символьный операнд — адрес из ТСИ, требует перемещения
                                                 int commandAddress = Convert.ToInt32(codeLine.Label, 16);
                                                 RelocationTable.Add(commandAddress);
 
                                                 secondPassLine = $"{"T"} {codeLine.Label} {4:X2} {codeLine.Command}{symbolicName.Address:X6}";
+                                            }
+                                            else
+                                            {
+                                                // Числовой операнд — абсолютный адрес, перемещение НЕ нужно
+                                                int address;
+                                                try
+                                                {
+                                                    address = Convert.ToInt32(operand, 16);
+                                                }
+                                                catch
+                                                {
+                                                    throw new AssemblerException(ErrorFormatter.LabelNotFound(i + 1, operand, textLine));
+                                                }
+
+                                                secondPassLine = $"{"T"} {codeLine.Label} {4:X2} {codeLine.Command}{address:X6}";
                                             }
                                             break; 
                                         }
@@ -162,25 +173,33 @@ namespace SysProgLaba1Shared
                                                 operand = operand.Substring(1, operand.Length - 2);
                                             }
 
+                                            int currentAddress = Convert.ToInt32(codeLine.Label, 16);
+                                            int nextAddress = currentAddress + 4;
+
                                             var symbolicName = GetSymbolicName(operand);    
 
-                                            if(symbolicName == null)
+                                            int targetAddress;
+                                            if(symbolicName != null)
                                             {
-                                                throw new AssemblerException(ErrorFormatter.LabelNotFound(i + 1, operand, textLine));
+                                                targetAddress = symbolicName.Address;
                                             }
                                             else
                                             {
-                                                // Вычисляем смещение: адрес метки - адрес следующей команды
-                                                int currentAddress = Convert.ToInt32(codeLine.Label, 16);
-                                                int nextAddress = currentAddress + 4; // Команда длиной 4 байта
-                                                int offset = symbolicName.Address - nextAddress;
-
-                                                // Смещение может быть отрицательным (для переходов назад)
-                                                // Представляем его как беззнаковое 24-битное значение
-                                                int offsetAsUnsigned = offset & 0xFFFFFF;
-
-                                                secondPassLine = $"{"T"} {codeLine.Label} {4:X2} {codeLine.Command}{offsetAsUnsigned:X6}";
+                                                // Числовой операнд — абсолютный адрес
+                                                try
+                                                {
+                                                    targetAddress = Convert.ToInt32(operand, 16);
+                                                }
+                                                catch
+                                                {
+                                                    throw new AssemblerException(ErrorFormatter.LabelNotFound(i + 1, operand, textLine));
+                                                }
                                             }
+
+                                            int offset = targetAddress - nextAddress;
+                                            int offsetAsUnsigned = offset & 0xFFFFFF;
+
+                                            secondPassLine = $"{"T"} {codeLine.Label} {4:X2} {codeLine.Command}{offsetAsUnsigned:X6}";
                                             break; 
                                         }
 

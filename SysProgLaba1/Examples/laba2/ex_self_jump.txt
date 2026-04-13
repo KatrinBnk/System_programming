@@ -1,0 +1,4 @@
+PROG START 100h
+LOOP JMP [LOOP]
+     INT 0
+     END 100h
